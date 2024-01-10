@@ -1,20 +1,21 @@
 import os
-import os
 
 import gradio as gr
 from langchain.chains import RetrievalQA
-from langchain.document_loaders import UnstructuredFileLoader
 from langchain.document_loaders import UnstructuredMarkdownLoader
-from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
 from langchain.vectorstores import Chroma
 from tqdm import tqdm
 
 from download import download
 from my_llm import InternLM_LLM
+
+__import__('pysqlite3')
+import sys
+
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 
 # 获取文件路径函数
