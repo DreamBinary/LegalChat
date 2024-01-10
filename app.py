@@ -1,18 +1,21 @@
-
-from langchain.vectorstores import Chroma
-from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 import os
-from my_llm import InternLM_LLM
-from langchain.prompts import PromptTemplate
-from langchain.chains import RetrievalQA
+import os
+
 import gradio as gr
+from langchain.chains import RetrievalQA
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.document_loaders import UnstructuredMarkdownLoader
+from langchain.embeddings.huggingface import HuggingFaceEmbeddings
+from langchain.embeddings.huggingface import HuggingFaceEmbeddings
+from langchain.prompts import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
-from langchain.embeddings.huggingface import HuggingFaceEmbeddings
+from langchain.vectorstores import Chroma
 from tqdm import tqdm
-import os
+
+from download import download
+from my_llm import InternLM_LLM
+
 
 # 获取文件路径函数
 def get_files(dir_path):
@@ -28,6 +31,7 @@ def get_files(dir_path):
             # elif filename.endswith(".txt"):
             #     file_list.append(os.path.join(filepath, filename))
     return file_list
+
 
 # 加载文件函数
 def get_text(dir_path):
@@ -48,6 +52,7 @@ def get_text(dir_path):
             continue
         docs.extend(loader.load())
     return docs
+
 
 def persist_vectordb():
     # 目标文件夹
@@ -73,6 +78,7 @@ def persist_vectordb():
     # 将加载的向量数据库持久化到磁盘上
     vectordb.persist()
 
+
 def load_chain():
     # 加载问答链
     # 定义 Embeddings
@@ -88,7 +94,7 @@ def load_chain():
     )
 
     # 加载自定义 LLM
-    llm = InternLM_LLM(model_path = "/root/model/Shanghai_AI_Laboratory/internlm-chat-7b")
+    llm = InternLM_LLM(model_path="/root/data/model/Shanghai_AI_Laboratory/internlm-chat-7b")
 
     # 定义一个 Prompt Template
     template = """使用以下上下文来回答最后的问题。如果你不知道答案，就说你不知道，不要试图编造答
@@ -97,17 +103,20 @@ def load_chain():
     问题: {question}
     有用的回答:"""
 
-    QA_CHAIN_PROMPT = PromptTemplate(input_variables=["context","question"],template=template)
+    QA_CHAIN_PROMPT = PromptTemplate(input_variables=["context", "question"], template=template)
 
     # 运行 chain
-    qa_chain = RetrievalQA.from_chain_type(llm,retriever=vectordb.as_retriever(),return_source_documents=True,chain_type_kwargs={"prompt":QA_CHAIN_PROMPT})
-    
+    qa_chain = RetrievalQA.from_chain_type(llm, retriever=vectordb.as_retriever(), return_source_documents=True,
+                                           chain_type_kwargs={"prompt": QA_CHAIN_PROMPT})
+
     return qa_chain
+
 
 class Model_center():
     """
     存储检索问答链的对象 
     """
+
     def __init__(self):
         # 构造函数，加载检索问答链
         self.chain = load_chain()
@@ -127,6 +136,8 @@ class Model_center():
             return e, chat_history
 
 
+download()
+
 persist_vectordb()
 
 # 实例化核心功能对象
@@ -134,7 +145,7 @@ model_center = Model_center()
 # 创建一个 Web 界面
 block = gr.Blocks()
 with block as app:
-    with gr.Row(equal_height=True):   
+    with gr.Row(equal_height=True):
         with gr.Column(scale=15):
             # 展示的页面标题
             gr.Markdown("""<h1><center>InternLM</center></h1>
@@ -155,10 +166,10 @@ with block as app:
                 # 创建一个清除按钮，用于清除聊天机器人组件的内容。
                 clear = gr.ClearButton(
                     components=[chatbot], value="Clear console")
-                
+
         # 设置按钮的点击事件。当点击时，调用上面定义的 qa_chain_self_answer 函数，并传入用户的消息和聊天历史记录，然后更新文本框和聊天机器人组件。
         db_wo_his_btn.click(model_center.qa_chain_self_answer, inputs=[
-                            msg, chatbot], outputs=[msg, chatbot])
+            msg, chatbot], outputs=[msg, chatbot])
 
     gr.Markdown("""提醒：<br>
     1. 初始化数据库时间可能较长，请耐心等待。
