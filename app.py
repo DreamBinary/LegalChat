@@ -56,7 +56,7 @@ def get_text(dir_path):
 
 def persist_vectordb():
     # 目标文件夹
-    dir_path = "/root/Legal_Legislation"
+    dir_path = "Legal_Legislation"
 
     docs = get_text(dir_path)
 
@@ -64,7 +64,7 @@ def persist_vectordb():
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=150)
     split_docs = text_splitter.split_documents(docs)
 
-    embeddings = HuggingFaceEmbeddings(model_name="/root/data/model/sentence-transformer")
+    embeddings = HuggingFaceEmbeddings(model_name="data/model/sentence-transformer")
 
     # 构建向量数据库
     # 定义持久化路径
@@ -82,7 +82,7 @@ def persist_vectordb():
 def load_chain():
     # 加载问答链
     # 定义 Embeddings
-    embeddings = HuggingFaceEmbeddings(model_name="/root/data/model/sentence-transformer")
+    embeddings = HuggingFaceEmbeddings(model_name="data/model/sentence-transformer")
 
     # 向量数据库持久化路径
     persist_directory = 'data_base/vector_db/chroma'
@@ -94,7 +94,7 @@ def load_chain():
     )
 
     # 加载自定义 LLM
-    llm = InternLM_LLM(model_path="/root/data/model/Shanghai_AI_Laboratory/internlm-chat-7b")
+    llm = InternLM_LLM(model_path="data/model/Shanghai_AI_Laboratory/internlm-chat-7b")
 
     # 定义一个 Prompt Template
     template = """使用以下上下文来回答最后的问题。如果你不知道答案，就说你不知道，不要试图编造答
