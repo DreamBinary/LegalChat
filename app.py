@@ -1,14 +1,11 @@
-import os
-
 import gradio as gr
 from langchain.chains import RetrievalQA
-from langchain.document_loaders import UnstructuredMarkdownLoader
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
-from tqdm import tqdm
 
+from data import get_text
 from download import download
 from my_llm import InternLM_LLM
 
@@ -19,40 +16,6 @@ sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 
 # 获取文件路径函数
-def get_files(dir_path):
-    # args：dir_path，目标文件夹路径
-    file_list = []
-    for filepath, dirnames, filenames in os.walk(dir_path):
-        # os.walk 函数将递归遍历指定文件夹
-        for filename in filenames:
-            # 通过后缀名判断文件类型是否满足要求
-            if filename.endswith(".jsonl"):
-                # 如果满足要求，将其绝对路径加入到结果列表
-                file_list.append(os.path.join(filepath, filename))
-            # elif filename.endswith(".txt"):
-            #     file_list.append(os.path.join(filepath, filename))
-    return file_list
-
-
-# 加载文件函数
-def get_text(dir_path):
-    # args：dir_path，目标文件夹路径
-    # 首先调用上文定义的函数得到目标文件路径列表
-    file_lst = get_files(dir_path)
-    # docs 存放加载之后的纯文本对象
-    docs = []
-    # 遍历所有目标文件
-    for one_file in tqdm(file_lst):
-        file_type = one_file.split('.')[-1]
-        if file_type == 'jsonl':
-            loader = UnstructuredMarkdownLoader(one_file)
-        # elif file_type == 'txt':
-        #     loader = UnstructuredFileLoader(one_file)
-        else:
-            # 如果是不符合条件的文件，直接跳过
-            continue
-        docs.extend(loader.load())
-    return docs
 
 
 def persist_vectordb():
@@ -95,7 +58,7 @@ def load_chain():
     )
 
     # 加载自定义 LLM
-    llm = InternLM_LLM(model_path="data/model/Shanghai_AI_Laboratory/internlm-chat-7b")
+    llm = InternLM_LLM(model_path="OpenLMLab/InternLM-7b")
 
     # 定义一个 Prompt Template
     template = """使用以下上下文来回答最后的问题。如果你不知道答案，就说你不知道，不要试图编造答
